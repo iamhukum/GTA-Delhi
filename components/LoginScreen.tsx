@@ -1,49 +1,17 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 
 interface LoginScreenProps {
   onLogin: (response: any) => void;
 }
 
-declare global {
-  interface Window {
-    google: any;
-  }
-}
-
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
-  const buttonRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    // Check if Google script is loaded
-    const initGoogle = () => {
-        if (window.google && window.google.accounts && buttonRef.current) {
-            try {
-                window.google.accounts.id.initialize({
-                    client_id: "1098586821360-placeholder.apps.googleusercontent.com", // Placeholder - user needs real ID
-                    callback: onLogin,
-                    auto_select: false,
-                    cancel_on_tap_outside: false
-                });
-                window.google.accounts.id.renderButton(
-                    buttonRef.current,
-                    { theme: "outline", size: "large", width: 280, type: "standard", shape: "pill" }
-                );
-            } catch (e) {
-                console.error("Google Sign-In error", e);
-            }
-        }
-    };
-
-    // Retry a few times if script loads slowly
-    const timer = setInterval(() => {
-        if (window.google) {
-            initGoogle();
-            clearInterval(timer);
-        }
-    }, 500);
-
-    return () => clearInterval(timer);
-  }, [onLogin]);
+  const handleSimulatedGoogleLogin = () => {
+    // Simulate the exact delay and behavior of a Google login for the demo
+    setTimeout(() => {
+        onLogin({ credential: "GOOGLE_SIMULATION_TOKEN" });
+    }, 600);
+  };
 
   return (
     <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md">
@@ -60,8 +28,15 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                 Sign in to save your empire.
             </p>
             
-            <div className="bg-white p-1 rounded-full mb-6">
-                <div ref={buttonRef} className="min-h-[40px] min-w-[240px]"></div>
+            <div className="bg-white p-1 rounded-full mb-6 w-[280px]">
+                {/* Custom Google-styled Button for Simulation */}
+                <button 
+                  onClick={handleSimulatedGoogleLogin}
+                  className="flex items-center justify-center w-full bg-white text-gray-700 font-medium py-2 rounded-full hover:bg-gray-50 transition-colors gap-3 border border-gray-200 shadow-sm"
+                >
+                  <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
+                  <span>Sign in with Google</span>
+                </button>
             </div>
             
             <div className="flex items-center gap-4 w-full justify-center">

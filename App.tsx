@@ -45,11 +45,23 @@ const App: React.FC = () => {
   }, [user]);
 
   const handleLogin = useCallback((response: any) => {
+    // 1. Handle Guest Mode
     if (response.credential === "DEMO_TOKEN") {
         setUser({ name: "Guest Player", email: "guest@delhi.city", picture: "" });
         return;
     }
+
+    // 2. Handle Simulated Google Login (For development/demo without GCP setup)
+    if (response.credential === "GOOGLE_SIMULATION_TOKEN") {
+        setUser({ 
+            name: "Hukum Yadav", 
+            email: "hukum@delhi.stories", 
+            picture: "https://api.dicebear.com/7.x/avataaars/svg?seed=Hukum&backgroundColor=b6e3f4" 
+        });
+        return;
+    }
     
+    // 3. Handle Real Google JWT (If client ID was provided)
     try {
         const base64Url = response.credential.split('.')[1];
         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -65,7 +77,9 @@ const App: React.FC = () => {
         });
     } catch (e) {
         console.error("Login Decode Error", e);
-        setNotification("Login Failed. Try Guest Mode.");
+        setNotification("Login Failed. Using Guest Mode.");
+        // Fallback to guest if real decode fails
+        setUser({ name: "Guest Player", email: "guest@delhi.city", picture: "" });
     }
   }, []);
 
