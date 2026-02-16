@@ -1,0 +1,7 @@
+{
+  "name": "Delhi City Stories",
+  "description": "A GTA-style open-world game set in Delhi. Roam the streets of CP, Gurgaon, and Old Delhi. Use your smartphone to access AI-powered features like real-time map data, image editing, and video generation.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
