@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { GameState, PhoneApp } from '../types';
 import { MapsApp } from './apps/MapsApp';
 import { BrowserApp } from './apps/BrowserApp';
@@ -11,9 +11,11 @@ interface PhoneUIProps {
   onLaunchApp: (app: PhoneApp) => void;
   onCloseApp: () => void;
   showNotification: (msg: string) => void;
+  onSetNavigation: (target: string) => void;
+  onTeleport: (x: number, y: number, name: string) => void;
 }
 
-export const PhoneUI: React.FC<PhoneUIProps> = ({ gameState, onClose, onLaunchApp, onCloseApp, showNotification }) => {
+export const PhoneUI: React.FC<PhoneUIProps> = ({ gameState, onClose, onLaunchApp, onCloseApp, showNotification, onSetNavigation, onTeleport }) => {
   const { activeApp } = gameState;
 
   // Home Screen
@@ -49,7 +51,7 @@ export const PhoneUI: React.FC<PhoneUIProps> = ({ gameState, onClose, onLaunchAp
                {/* App Header */}
                {activeApp !== 'camera' && (
                     <div className="bg-gray-100 p-2 flex items-center border-b shadow-sm">
-                        <button onClick={onCloseApp} className="p-1 hover:bg-gray-200 rounded">
+                        <button onClick={onCloseApp} className="p-1 hover:bg-gray-200 rounded" aria-label="Back">
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
                         </button>
                         <span className="ml-2 font-bold capitalize">{activeApp}</span>
@@ -57,7 +59,7 @@ export const PhoneUI: React.FC<PhoneUIProps> = ({ gameState, onClose, onLaunchAp
                )}
                
                <div className="flex-1 overflow-auto relative">
-                   {activeApp === 'maps' && <MapsApp gameState={gameState} />}
+                   {activeApp === 'maps' && <MapsApp gameState={gameState} onSetNavigation={onSetNavigation} onTeleport={onTeleport} />}
                    {activeApp === 'browser' && <BrowserApp />}
                    {activeApp === 'camera' && <CameraApp onClose={onCloseApp} showNotification={showNotification} />}
                    {activeApp === 'missions' && <MissionsApp district={gameState.currentDistrict} />}
@@ -67,13 +69,16 @@ export const PhoneUI: React.FC<PhoneUIProps> = ({ gameState, onClose, onLaunchAp
       </div>
 
       {/* Home Bar */}
-      <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-white rounded-full z-20 mb-2 cursor-pointer" onClick={activeApp ? onCloseApp : onClose}></div>
+      <button 
+        className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-white rounded-full z-20 mb-2 cursor-pointer border-none" 
+        onClick={activeApp ? onCloseApp : onClose}
+        aria-label="Go Home or Close"
+      ></button>
     </div>
   );
 };
 
 const AppIcon: React.FC<{ icon: string; label: string; color: string; onClick: () => void }> = ({ icon, label, color, onClick }) => {
-    // Mapping icons to simple SVG paths for brevity
     const getPath = (name: string) => {
         switch(name) {
             case 'map': return <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0121 18.382V7.618a1 1 0 01-1.447-.894L15 7m0 13V7" />;
@@ -87,13 +92,17 @@ const AppIcon: React.FC<{ icon: string; label: string; color: string; onClick: (
     }
 
     return (
-        <div className="flex flex-col items-center gap-1 cursor-pointer transform hover:scale-105 transition-transform" onClick={onClick}>
-            <div className={`w-14 h-14 ${color} rounded-2xl flex items-center justify-center text-white shadow-lg`}>
+        <button 
+            className="flex flex-col items-center gap-1 cursor-pointer transform hover:scale-105 transition-transform bg-transparent border-none p-0 focus:outline-none focus:ring-2 focus:ring-yellow-400 rounded-2xl" 
+            onClick={onClick}
+            aria-label={`Open ${label}`}
+        >
+            <div className={`w-14 h-14 ${color} rounded-2xl flex items-center justify-center text-white shadow-lg pointer-events-none`}>
                  <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     {getPath(icon)}
                  </svg>
             </div>
-            <span className="text-white text-xs font-medium drop-shadow">{label}</span>
-        </div>
+            <span className="text-white text-xs font-medium drop-shadow pointer-events-none">{label}</span>
+        </button>
     )
 }

@@ -1,5 +1,5 @@
 import { GoogleGenAI, GenerateContentResponse, Modality } from "@google/genai";
-import { setNavigationFunction, GroundingChunk } from '../types';
+import { setNavigationFunction, GroundingChunk, AIStudio } from '../types';
 
 // Helper to ensure API key is available for regular calls
 const getAI = () => {
@@ -115,8 +115,9 @@ export const editImage = async (base64Image: string, prompt: string): Promise<st
 // --- Veo Video Generation ---
 
 export const generateVeoVideo = async (imageFile: File, prompt: string = "Animate this scene naturally"): Promise<string> => {
-    // 1. Check/Request API Key
-    const win = window as any;
+    // 1. Check/Request API Key using strict typing
+    const win = window as unknown as { aistudio?: AIStudio };
+    
     if (win.aistudio && win.aistudio.hasSelectedApiKey) {
         const hasKey = await win.aistudio.hasSelectedApiKey();
         if (!hasKey) {
@@ -125,8 +126,6 @@ export const generateVeoVideo = async (imageFile: File, prompt: string = "Animat
     }
 
     // 2. Re-initialize AI with potentially new key environment
-    // Note: The guide says `process.env.API_KEY` is injected automatically after selection.
-    // We create a new instance to be safe.
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
     // Convert File to Base64
@@ -144,7 +143,7 @@ export const generateVeoVideo = async (imageFile: File, prompt: string = "Animat
             config: {
                 numberOfVideos: 1,
                 resolution: '720p',
-                aspectRatio: '16:9' // Defaulting to landscape for cinematic feel
+                aspectRatio: '16:9'
             }
         });
 

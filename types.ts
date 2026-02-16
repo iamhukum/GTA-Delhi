@@ -9,6 +9,9 @@ export interface GameState {
   currentDistrict: string;
   isPhoneOpen: boolean;
   activeApp: PhoneApp | null;
+  inVehicle: boolean;
+  navigationTarget: { x: number, y: number, name: string } | null;
+  teleportTarget: { x: number, y: number } | null; // New: Instant travel
 }
 
 export type PhoneApp = 'maps' | 'camera' | 'veo' | 'browser' | 'missions';
@@ -27,7 +30,7 @@ export interface Landmark {
   name: string;
   x: number;
   y: number;
-  type: 'office' | 'monument' | 'shop' | 'park';
+  type: 'office' | 'monument' | 'shop' | 'park' | 'temple';
 }
 
 export interface GroundingChunk {
@@ -44,6 +47,11 @@ export interface GroundingChunk {
         }[];
     }[];
   };
+}
+
+export interface AIStudio {
+  hasSelectedApiKey: () => Promise<boolean>;
+  openSelectKey: () => Promise<void>;
 }
 
 // Function Declarations for Gemini Tools

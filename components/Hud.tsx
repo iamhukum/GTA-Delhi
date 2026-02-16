@@ -14,9 +14,11 @@ export const Hud: React.FC<HudProps> = ({ gameState, onPhoneClick }) => {
         <div className="bg-black/50 backdrop-blur-md p-3 rounded-lg border border-gray-700 text-xs text-gray-300 font-mono">
            <h3 className="text-yellow-400 font-bold mb-1 uppercase">Controls</h3>
            <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-             <span>W / Up</span> <span className="text-white">Accelerate</span>
-             <span>S / Down</span> <span className="text-white">Brake/Reverse</span>
+             <span>W / Up</span> <span className="text-white">Move</span>
+             <span>S / Down</span> <span className="text-white">Brake</span>
              <span>A / D</span> <span className="text-white">Steer</span>
+             <span>F</span> <span className="text-yellow-300 font-bold">{gameState.inVehicle ? 'Exit Car' : 'Enter Car'}</span>
+             <span>Space</span> <span className="text-red-400 font-bold">{gameState.inVehicle ? 'Handbrake' : 'Attack'}</span>
              <span>P / Tab</span> <span className="text-white">Phone</span>
            </div>
         </div>
@@ -26,6 +28,10 @@ export const Hud: React.FC<HudProps> = ({ gameState, onPhoneClick }) => {
       <div className="absolute top-6 right-6 flex flex-col items-end space-y-2">
         <div className="text-4xl font-pricedown text-green-400 font-bold drop-shadow-md tracking-wider">
           ${gameState.money}
+        </div>
+        {/* Health Bar */}
+        <div className="w-32 h-4 bg-gray-800 rounded-full border-2 border-gray-600 overflow-hidden">
+             <div className="h-full bg-red-500 transition-all duration-300" style={{ width: `${gameState.health}%` }}></div>
         </div>
         <div className="flex space-x-1">
             {[...Array(5)].map((_, i) => (
@@ -46,6 +52,7 @@ export const Hud: React.FC<HudProps> = ({ gameState, onPhoneClick }) => {
       <div className="absolute bottom-6 right-6 pointer-events-auto">
           <button 
             onClick={onPhoneClick}
+            aria-label={gameState.isPhoneOpen ? "Close Phone" : "Open Phone"}
             className={`w-16 h-16 rounded-full bg-indigo-600 hover:bg-indigo-500 shadow-2xl border-4 border-gray-800 transition-transform transform hover:scale-110 flex items-center justify-center ${gameState.isPhoneOpen ? 'ring-4 ring-yellow-400' : ''}`}
           >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
