@@ -2,10 +2,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { GameCanvas } from './components/GameCanvas';
 import { PhoneUI } from './components/PhoneUI';
 import { Hud } from './components/Hud';
-import { GameState, PhoneApp } from './types';
+import { LoginScreen } from './components/LoginScreen';
+import { GameState, PhoneApp, UserProfile } from './types';
 import { LANDMARKS } from './constants';
 
 const App: React.FC = () => {
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [gameState, setGameState] = useState<GameState>({
     playerX: 2000,
     playerY: 2000,
@@ -17,7 +19,8 @@ const App: React.FC = () => {
     activeApp: null,
     inVehicle: true,
     navigationTarget: null,
-    teleportTarget: null
+    teleportTarget: null,
+    currentWeapon: 'fist'
   });
 
   const [notification, setNotification] = useState<string | null>(null);
@@ -25,6 +28,8 @@ const App: React.FC = () => {
   // Keyboard shortcut to toggle phone
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (!user) return; // Disable keys if not logged in
+
       const target = e.target as HTMLElement;
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
         return;
@@ -37,6 +42,31 @@ const App: React.FC = () => {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [user]);
+
+  const handleLogin = useCallback((response: any) => {
+    if (response.credential === "DEMO_TOKEN") {
+        setUser({ name: "Guest Player", email: "guest@delhi.city", picture: "" });
+        return;
+    }
+    
+    try {
+        const base64Url = response.credential.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+
+        const payload = JSON.parse(jsonPayload);
+        setUser({
+            name: payload.name,
+            email: payload.email,
+            picture: payload.picture
+        });
+    } catch (e) {
+        console.error("Login Decode Error", e);
+        setNotification("Login Failed. Try Guest Mode.");
+    }
   }, []);
 
   const handlePhoneToggle = useCallback(() => {
@@ -99,20 +129,25 @@ const App: React.FC = () => {
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-gray-900 text-white font-sans select-none" role="application" aria-label="Delhi City Stories Game">
-      {/* Game World Layer */}
+      
+      {/* Game World Layer - Always rendered but might be inactive */}
       <GameCanvas 
         onLocationUpdate={updateLocation} 
         onGameUpdate={handleGameUpdate}
         isPhoneOpen={gameState.isPhoneOpen}
         navigationTarget={gameState.navigationTarget}
         teleportTarget={gameState.teleportTarget}
+        inputEnabled={!!user && !gameState.isPhoneOpen}
       />
 
-      {/* HUD Layer */}
-      <Hud gameState={gameState} onPhoneClick={handlePhoneToggle} />
+      {/* Login Overlay */}
+      {!user && <LoginScreen onLogin={handleLogin} />}
+
+      {/* HUD Layer - Only when logged in */}
+      {user && <Hud gameState={gameState} onPhoneClick={handlePhoneToggle} user={user} />}
 
       {/* Phone UI Layer */}
-      {gameState.isPhoneOpen && (
+      {user && gameState.isPhoneOpen && (
         <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/50 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Smartphone Interface">
           <PhoneUI 
             gameState={gameState} 

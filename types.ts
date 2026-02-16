@@ -11,10 +11,18 @@ export interface GameState {
   activeApp: PhoneApp | null;
   inVehicle: boolean;
   navigationTarget: { x: number, y: number, name: string } | null;
-  teleportTarget: { x: number, y: number } | null; // New: Instant travel
+  teleportTarget: { x: number, y: number } | null;
+  currentWeapon: WeaponType;
+}
+
+export interface UserProfile {
+  name: string;
+  email: string;
+  picture: string;
 }
 
 export type PhoneApp = 'maps' | 'camera' | 'veo' | 'browser' | 'missions';
+export type WeaponType = 'fist' | 'pistol' | 'uzi' | 'ak47';
 
 export interface District {
   name: string;
